@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <header class="top-bar">
+    <span class="brand">DASHBOARD</span>
+    <span class="controls">
+      <button class="btn-theme" id="btn-theme" title="Toggle light / dark mode">LIGHT</button>
+      <button class="btn-lock" id="btn-lock" title="Lock / unlock layout">UNLOCK</button>
+    </span>
+    <span class="live-dot" id="live-dot" title="Data is refreshing"></span>
+    <span class="clock" id="clock"></span>
+  </header>
+
+  <div class="grid-stack" id="grid">
+
+    <!-- ── GCP Dot (compact) ── -->
+    <div class="grid-stack-item" gs-x="0" gs-y="0" gs-w="4" gs-h="5" gs-id="gcp">
+      <div class="grid-stack-item-content">
+        <div class="module module-clickable" id="gcp-module-card" title="Click for details">
+          <span class="mod-label">GCP DOT</span>
+          <span class="mod-expand-hint">&#x2B06; details</span>
+          <div class="gcp-compact-top">
+            <div class="gcp-dot gcp-dot-sm" id="gcp-dot"></div>
+            <div class="gcp-compact-info">
+              <div class="gcp-status" id="gcp-status">Loading…</div>
+              <div class="gcp-value"  id="gcp-value"></div>
+            </div>
+          </div>
+          <div class="gcp-mini-wrap">
+            <canvas id="gcp-mini-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── S&P 500 ── -->
+    <div class="grid-stack-item" gs-x="4" gs-y="0" gs-w="4" gs-h="5" gs-id="sp500">
+      <div class="grid-stack-item-content">
+        <div class="module">
+          <span class="mod-label">S&amp;P 500</span>
+          <div class="sp-price"  id="sp-price">—</div>
+          <div class="sp-change" id="sp-change"></div>
+          <span class="sp-time"  id="sp-time"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Moon Phase ── -->
+    <div class="grid-stack-item" gs-x="8" gs-y="0" gs-w="4" gs-h="5" gs-id="moon">
+      <div class="grid-stack-item-content">
+        <div class="module">
+          <span class="mod-label">MOON PHASE</span>
+          <div class="moon-wrap">
+            <canvas id="moon-canvas" width="110" height="110"></canvas>
+          </div>
+          <div class="moon-name"  id="moon-name">Loading…</div>
+          <div class="moon-illum" id="moon-illum"></div>
+          <div class="moon-next"  id="moon-next"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Kp Index ── -->
+    <div class="grid-stack-item" gs-x="0" gs-y="5" gs-w="6" gs-h="5" gs-id="kp">
+      <div class="grid-stack-item-content">
+        <div class="module kp-module">
+          <span class="mod-label">KP INDEX</span>
+          <div class="kp-top">
+            <div class="kp-value" id="kp-value">—</div>
+            <div class="kp-status" id="kp-status"></div>
+          </div>
+          <div class="kp-chart-wrap">
+            <canvas id="kp-chart"></canvas>
+          </div>
+          <span class="kp-time" id="kp-time"></span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid-stack -->
+
+  <!-- ── GCP Detail Overlay ── -->
+  <div id="gcp-overlay" class="overlay-backdrop" aria-hidden="true">
+    <div class="overlay-card" role="dialog" aria-label="GCP Detail">
+
+      <div class="overlay-header">
+        <span class="overlay-title">GCP DOT</span>
+        <span class="overlay-subtitle" id="ov-subtitle"></span>
+        <button class="overlay-close" id="gcp-overlay-close" aria-label="Close">&#x2715;</button>
+      </div>
+
+      <div class="overlay-body">
+
+        <!-- Left: dot + index -->
+        <div class="ov-dot-col">
+          <div class="gcp-dot ov-dot" id="ov-dot"></div>
+          <div class="gcp-status" id="ov-status"></div>
+          <div class="gcp-value"  id="ov-value"></div>
+        </div>
+
+        <!-- Right: legend -->
+        <div class="ov-legend-col">
+          <div class="gcp-legend">
+            <div class="legend-item" data-statuses="Striking">
+              <span class="swatch" style="background:#FF1E1E"></span>
+              <span class="legend-label">Striking</span>
+              <span class="legend-desc">Deeply coherent — top 1%</span>
+            </div>
+            <div class="legend-item" data-statuses="Very Strong,Strong">
+              <span class="swatch" style="background:#FFB82E"></span>
+              <span class="legend-label">Strong</span>
+              <span class="legend-desc">Significant deviation — top 1–8%</span>
+            </div>
+            <div class="legend-item" data-statuses="Significant,Elevated,Notable">
+              <span class="swatch" style="background:#FFFA40"></span>
+              <span class="legend-label">Elevated</span>
+              <span class="legend-desc">Noticeable coherence — top 8–40%</span>
+            </div>
+            <div class="legend-item" data-statuses="Interesting,Normal">
+              <span class="swatch" style="background:#64FA64"></span>
+              <span class="legend-label">Normal</span>
+              <span class="legend-desc">Expected random variance — 40–90%</span>
+            </div>
+            <div class="legend-item" data-statuses="Slightly Random,Random,More Random">
+              <span class="swatch" style="background:#64FAAB"></span>
+              <span class="legend-label">Random</span>
+              <span class="legend-desc">Above-average variance — top 90–96%</span>
+            </div>
+            <div class="legend-item" data-statuses="Very Random,Dispersed">
+              <span class="swatch" style="background:#5655CA"></span>
+              <span class="legend-label">Dispersed</span>
+              <span class="legend-desc">Highly divergent — top 96–100%</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /overlay-body -->
+
+      <!-- Chart -->
+      <div class="ov-chart-wrap">
+        <span class="mod-label" style="position:static;display:block;margin-bottom:8px">
+          HISTORY &nbsp;<span id="ov-hist-window" style="font-weight:400;letter-spacing:1px;color:var(--muted)"></span>
+        </span>
+        <div class="hist-wrap" style="height:160px">
+          <canvas id="gcp-chart"></canvas>
+        </div>
+      </div>
+
+    </div><!-- /overlay-card -->
+  </div><!-- /overlay-backdrop -->
+
+  <script src="https://cdn.jsdelivr.net/npm/gridstack@10/dist/gridstack-all.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
